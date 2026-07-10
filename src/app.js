@@ -2,32 +2,23 @@ const express = require("express")
 
 const app = express();
 
-app.use("/user" , (req,res) => {
-    res.send("Order matters hahahahahhahah")
-})
+// matches /abc and /ab
 
-// this matches only get req
-app.get("/user", (req, res) => {
-    res.send({
-        message: "This is user GET only",
-        firstName: "Garv",
-        netWorth: "1.2 Trillion dollars"
-    });
+// Doesnt work for express 5 ver
+// app.use("/ab?c" , (req,res) => {
+//     res.send("This is abc")
+// })
+
+// Routing regex
+
+app.use(/^\/abc?$/, (req, res) => {
+    console.log(req.query   )
+    res.send("Matched /ab or /abc");
 });
 
-app.post("/user" , (req,res) => {
-    console.log("Save data");
-    res.send("Data saved")
-})
-
-app.delete("/user" , (req,res) => {
-    res.send("User deleted")
-})
-
-// this matches both get and post requests
-app.use( "/test" ,(req,res) => {
-    res.send("This func is called as request handler")
-} )
+app.use(/^\/wx.*yz$/, (req, res) => {
+    res.send("Matched!");
+});
 
 const port = 7777
 app.listen(port, () => {
