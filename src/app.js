@@ -2,16 +2,31 @@ const express = require("express")
 
 const app = express();
 
-app.use( "/" ,(req,res) => {
-    res.send("Nodemon is the best")
-} )
-// "/test" this is called as route if we dont add this then 
-// we will be getting response for all routes of the port
+app.use("/user" , (req,res) => {
+    res.send("Order matters hahahahahhahah")
+})
+
+// this matches only get req
+app.get("/user", (req, res) => {
+    res.send({
+        message: "This is user GET only",
+        firstName: "Garv",
+        netWorth: "1.2 Trillion dollars"
+    });
+});
+
+app.post("/user" , (req,res) => {
+    console.log("Save data");
+    res.send("Data saved")
+})
+
+app.delete("/user" , (req,res) => {
+    res.send("User deleted")
+})
+
+// this matches both get and post requests
 app.use( "/test" ,(req,res) => {
     res.send("This func is called as request handler")
-} )
-app.use( "/me" ,(req,res) => {
-    res.send("Who am I?")
 } )
 
 const port = 7777
