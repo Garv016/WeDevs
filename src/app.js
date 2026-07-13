@@ -3,29 +3,29 @@ const express = require("express")
 const app = express();
 
 
-const {adminAuth , userAuth} = require("./middlewares/auth.js")
-// For middleware we generally use "use"
+// app.use("/user/login",(req,res) =>{
+//     throw new Error("Login page not avl")
+//     res.send("Login Page")
+// }) 
 
-// Handle auth middleware for all GET, POST, PATCH ETC...
-app.use("/admin" , adminAuth)
-
-app.use("/user/data" ,userAuth,(req,res) =>{
-    res.send("User Here")
+// Another good way is to use Try Catch
+app.use("/user/login",(req,res) =>{
+    try {
+        throw new Error("Login page not avl")
+        res.send("Login Page")
+    } catch (error) {
+        res.status(500).send(`hi ${error}`)
+    }
+    
 }) 
-app.use("/user/login" ,userAuth,(req,res) =>{
-    res.send("Login Page")
-}) 
 
-
-app.get("/admin/addUser",(req,res)=>{
-    res.send("User added")
+app.use("/" , (err,req,res,next) => {
+    if(err){
+        // res.status(500).send("Something went wrong")
+        res.send(err.message)
+    }
 })
 
-app.get("/admin/delUser",(req,res)=>{
-    
-    res.send("User Deleted")
-    
-})
 
 
 const port = 7777
