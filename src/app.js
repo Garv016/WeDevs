@@ -71,24 +71,31 @@ app.delete("/delete" , async (req,res) =>{
 
 
 // Update user API
-    app.patch("/user" , async (req,res) =>{
-        try{
-            const userData= await User.findByIdAndUpdate(req.body.id,req.body) 
-            // can add in above as options { new: true, runValidators: true }
-            if(!userData.length === 0){
-                res.status(404).send("No user")
+app.patch("/user" , async (req,res) =>{
+    try{
+        const userData= await User.findByIdAndUpdate(
+            req.body.id,
+            req.body,
+            {
+                new : true,
+                runValidators : true
             }
-            else {
-                res.send(userData)
-                console.log("User Updated successfully");
-            }
+        ) 
+        // can add in above as options { new: true, runValidators: true }
+        if(!userData.length === 0){
+            res.status(404).send("No user")
+        }
+        else {
+            res.send(userData)
+            console.log("User Updated successfully");
+        }
 
-        }
-        catch (err) {
-            console.log(err);
-            res.status(500).send("Something's OFF");
-        }
-    })
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).send(err.message);
+    }
+})
 
 // Taking input from postman
 app.post("/signup" , async (req,res) => {
@@ -97,7 +104,7 @@ app.post("/signup" , async (req,res) => {
     const user = new User(req.body); // Created a new instance of USER using the data got from API
 
     try{
-        throw new Error("GOTCHA")
+        // throw new Error("GOTCHA")
         await user.save() 
         // console.log("User saved Successfully");
         res.send("User saved successfully")
@@ -111,14 +118,14 @@ app.post("/signup" , async (req,res) => {
     
 })
 
-// Saving data from here
+// // Saving data from here
 // app.post("/signup" , async (req,res) => {
 //     const userData = {
-//         firstName : "Mahendra",
-//         middleName : "Singh", // doesnt matter if i add it if not in schema wont reflect n db
-//         lastName : "Dhoni",
-//         email : "msd@msd.in",
-//         age : 46,
+//         firstName : "Rohit",
+//         // middleName : "Singh", // doesnt matter if i add it if not in schema wont reflect n db
+//         lastName : "Sharma",
+//         email : "rs@rs.in",
+//         age : 39,
 //         gender : "male",
 //         // _id : "507f1f77bcf86cd799439011"
 //     }
