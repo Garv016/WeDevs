@@ -3,7 +3,8 @@ const app = express();
 
 const connectDB = require("./config/database"); // connect to database
 const User = require("./model/user");
-
+const isValid = require("./utils/validation.js")
+const bcrypt = require("bcrypt")
 
 // This helps us to handle the json data to parse through and stuff
 // .use() without a route means work for all
@@ -72,6 +73,16 @@ app.delete("/delete" , async (req,res) =>{
 
 // Update user API
 app.patch("/user" , async (req,res) =>{
+
+    // RAN IT ONCE TO ADD PASS TO ALL OLD USERS
+    // const users = await User.find({
+    //     password: { $exists: false }
+    // });
+
+    // for (const user of users) {
+    //     user.password = `${user.firstName}@123`;
+    //     await user.save();
+    // }
     // const data = req.body; // stores id
     const { id, ...data } = req.body;
     
@@ -118,9 +129,19 @@ app.patch("/user" , async (req,res) =>{
 app.post("/signup" , async (req,res) => {
     // console.log(req.body); // if hadnt used express.json upr then woudve gotten undefined instead of data
 
-    const user = new User(req.body); // Created a new instance of USER using the data got from API
-
+    
     try{
+        // Validation the data
+        isValid(req);
+        const {password,lastName,firstName,age,email} = req.body;
+        
+        // Encrypting data
+        const passwordHash = await bcrypt.hash(password,10)
+        console.log(passwordHash);
+        
+
+        const user = new User({firstName,lastName,password:passwordHash,email,age}); // Created a new instance of USER using the data got from API
+
         // throw new Error("GOTCHA")
         await user.save() 
         // console.log("User saved Successfully");

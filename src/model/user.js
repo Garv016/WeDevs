@@ -14,7 +14,6 @@ const userSchema = new mongoose.Schema({
     },
     gender : {
         type : String,
-        required : true,
         enum: {
             values: ['male', 'female'],
             message: '{VALUE} is not supported'
@@ -67,6 +66,10 @@ const userSchema = new mongoose.Schema({
     skills : {
         type : [String],
         default : ["belligerent","intelligent"]
+    },
+    password : {
+        type : String,
+        required : true
     }
 }, {timestamps : true})
 
