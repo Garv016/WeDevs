@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-    
+const validator = require("validator")  
 // SCHEMA INCLUDES ALL THE STUFF WE GONNA ADD TO USER COLLECTION
 
 const userSchema = new mongoose.Schema({
@@ -49,7 +49,12 @@ const userSchema = new mongoose.Schema({
         required : true,
         unique: true,
         lowercase: true, // user can submit capital as well but mongoose converts on its own        trim: true,
-        match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"]
+        // match: [/^\S+@\S+\.\S+$/, "Please enter a valid email"] // either this or use validator library
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Invalid")
+            }
+        }
         // required → email must exist
         // unique   → no duplicate email in DB
         // match    → email must match the given pattern

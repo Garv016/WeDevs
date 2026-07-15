@@ -72,10 +72,27 @@ app.delete("/delete" , async (req,res) =>{
 
 // Update user API
 app.patch("/user" , async (req,res) =>{
+    // const data = req.body; // stores id
+    const { id, ...data } = req.body;
+    
     try{
+        const ALLOWED_FIELDS = [
+        "lastName" , "skills" ,"about", "age"
+        ]
+        const isAllowed = Object.keys(data).every(
+            (k) => ALLOWED_FIELDS.includes(k)
+        );
+
+        if(!isAllowed) {
+            throw new Error("Only the fields below can be updated \n" + ALLOWED_FIELDS )
+        }
+        if(data?.skills.length > 5){
+            throw new Error("Max 5 skills allowed")
+        }
+    
         const userData= await User.findByIdAndUpdate(
             req.body.id,
-            req.body,
+            data,
             {
                 new : true,
                 runValidators : true
