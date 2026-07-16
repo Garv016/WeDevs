@@ -5,10 +5,102 @@ const connectDB = require("./config/database"); // connect to database
 const User = require("./model/user");
 const isValid = require("./utils/validation.js")
 const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+const { userAuth } = require("./middlewares/auth.js");
+
 
 // This helps us to handle the json data to parse through and stuff
 // .use() without a route means work for all
 app.use(express.json()) // middleware
+app.use(cookieParser());
+
+// Taking input from postman
+app.post("/signup" , async (req,res) => {
+    // console.log(req.body); // if hadnt used express.json upr then woudve gotten undefined instead of data
+
+    
+    try{
+        // Validation the data
+        isValid(req);
+        const {password,lastName,firstName,age,email} = req.body;
+        
+        // Encrypting data
+        const passwordHash = await bcrypt.hash(password,10)
+        console.log(passwordHash);
+        
+
+        const user = new User({firstName,lastName,password:passwordHash,email,age}); // Created a new instance of USER using the data got from API
+
+        // throw new Error("GOTCHA")
+        await user.save() 
+        // console.log("User saved Successfully");
+        res.send("User saved successfully")
+
+    }
+    catch(err){
+        // console.log("Error: ",err);
+        // res.send("Error: ",err); // wont show err
+        res.status(400).send("Error: " + err.message);
+    }
+    
+})
+
+app.post("/login" ,async (req,res) => {
+    // RAN IT ONCE TO ADD PASS TO ALL OLD USERS
+    try{
+        
+        const {email,password} = req.body;
+        const user = await User.findOne({email})
+
+        if(!user){
+            throw new Error("Invalid Credential")
+        }
+        const isPasswordValid = await user.checkPassword(password)
+
+        if(isPasswordValid){
+
+            // JWT TOKEN creaation
+            const token = await user.getJWT();
+
+            // cookie
+            res.cookie("token",token); // sending cookie: It tells the browser:"Please store this cookie."
+            console.log(token);
+            
+            res.send("Successfully Logged in")
+            // console.log("User: ", user);
+            
+        } else{
+            throw new Error("Invalid credential")
+        }
+
+    }
+    catch(err){
+        res.status(400).send("Error : "+ err.message)
+    }
+})
+
+// /profile api
+app.get("/profile" , userAuth,async (req,res) =>{
+
+    try{
+
+        const user = req.user
+        res.send("User with name " + user.firstName + " found" + user);
+    
+        // res.send("Cookie received")
+    }
+    catch(err){
+        res.status(400).send("ERROR: " + err.message)
+    }
+    
+
+}) 
+
+app.post("/sendConnectionRequest",userAuth, (req,res) =>{
+    const user = req.user
+    res.send(user.firstName + " wants to connect")
+})
 
 // GET /user using mail
 app.get("/user" , async (req,res) =>{
@@ -125,36 +217,6 @@ app.patch("/user" , async (req,res) =>{
     }
 })
 
-// Taking input from postman
-app.post("/signup" , async (req,res) => {
-    // console.log(req.body); // if hadnt used express.json upr then woudve gotten undefined instead of data
-
-    
-    try{
-        // Validation the data
-        isValid(req);
-        const {password,lastName,firstName,age,email} = req.body;
-        
-        // Encrypting data
-        const passwordHash = await bcrypt.hash(password,10)
-        console.log(passwordHash);
-        
-
-        const user = new User({firstName,lastName,password:passwordHash,email,age}); // Created a new instance of USER using the data got from API
-
-        // throw new Error("GOTCHA")
-        await user.save() 
-        // console.log("User saved Successfully");
-        res.send("User saved successfully")
-
-    }
-    catch(err){
-        // console.log("Error: ",err);
-        // res.send("Error: ",err); // wont show err
-        res.status(400).send("Error: " + err.message);
-    }
-    
-})
 
 // // Saving data from here
 // app.post("/signup" , async (req,res) => {

@@ -1,5 +1,7 @@
 const mongoose = require("mongoose")
 const validator = require("validator")  
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
 // SCHEMA INCLUDES ALL THE STUFF WE GONNA ADD TO USER COLLECTION
 
 const userSchema = new mongoose.Schema({
@@ -72,6 +74,18 @@ const userSchema = new mongoose.Schema({
         required : true
     }
 }, {timestamps : true})
+
+userSchema.methods.checkPassword = async function(passwordByUser) {
+    const user = this;
+    const passwordHash = user.password
+    const check = await bcrypt.compare(passwordByUser, passwordHash);
+    return check;
+}
+userSchema.methods.getJWT = function() {
+    const user = this;
+    const token = jwt.sign({_id : this._id},"LEARNING@JWT16",{expiresIn : '1d'} )
+    return token;
+}
 
 // name of model , schema
 const User = mongoose.model("User", userSchema)
