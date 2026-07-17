@@ -14,4 +14,24 @@ const isValid = (req) => {
     }
 }
 
-module.exports = isValid
+const validateEmailEdit = (req) => {
+    const { id, ...data } = req.body;
+    
+    
+    const ALLOWED_FIELDS = [
+    "lastName" , "skills" ,"about", "age"
+    ]
+    const isAllowed = Object.keys(data).every(
+        (k) => ALLOWED_FIELDS.includes(k)
+    );
+
+    if(!isAllowed) {
+        throw new Error("Only the fields below can be updated \n" + ALLOWED_FIELDS )
+    }
+    if ((data.skills)?.length > 5) {
+        throw new Error("Max 5 skills allowed");
+    }        
+    
+}
+
+module.exports = {isValid , validateEmailEdit}

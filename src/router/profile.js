@@ -5,6 +5,7 @@ const profileRouter = express.Router()
 // imports
 const { userAuth } = require("../middlewares/auth.js");
 const User = require("../model/user")
+const {validateEmailEdit}  = require("../utils/validation.js")
 
 // Profile api -> get details of existing user using TOKEN
 profileRouter.get("/profile" , userAuth,async (req,res) =>{
@@ -46,37 +47,18 @@ profileRouter.patch("/profile/edit" ,userAuth, async (req,res) =>{
     const { id, ...data } = req.body;
     
     try{
-        const ALLOWED_FIELDS = [
-        "lastName" , "skills" ,"about", "age"
-        ]
-        const isAllowed = Object.keys(data).every(
-            (k) => ALLOWED_FIELDS.includes(k)
-        );
+        
+        validateEmailEdit(req)
 
-        if(!isAllowed) {
-            throw new Error("Only the fields below can be updated \n" + ALLOWED_FIELDS )
+        const user = req.user;
+        for (const d in data) {
+            user[d] = data[d];
         }
-        if (data.skills && data.skills.length > 5) {
-            throw new Error("Max 5 skills allowed");
-        }
-    
-        const userData= await User.findByIdAndUpdate(
-            id,
-            data,
-            {
-                new : true,
-                runValidators : true // this only runs in PUT by default thats why we make it true here
-            }
-        ) 
+        // Object.assign(user, data); // same as for loop 
 
-        if(!userData){
-            res.status(404).send("No user")
-        }
-        else {
-            res.send(userData)
-            console.log("User Updated successfully");
-        }
-
+        await user.save()
+        res.send(user)
+         
     }
     catch (err) {
         
