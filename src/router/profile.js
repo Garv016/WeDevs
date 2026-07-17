@@ -5,8 +5,9 @@ const profileRouter = express.Router()
 // imports
 const { userAuth } = require("../middlewares/auth.js");
 const User = require("../model/user")
-const {validateEmailEdit}  = require("../utils/validation.js")
-
+const {validateEmailEdit}  = require("../utils/validation.js");
+const { isStrongPassword } = require("validator");
+const bcrypt = require("bcrypt")
 // Profile api -> get details of existing user using TOKEN
 profileRouter.get("/profile" , userAuth,async (req,res) =>{
 
@@ -57,13 +58,64 @@ profileRouter.patch("/profile/edit" ,userAuth, async (req,res) =>{
         // Object.assign(user, data); // same as for loop 
 
         await user.save()
-        res.send(user)
+        // res.send(user)
+        res.json({message : `${user.firstName}, Your data has been updated successfully`,
+            data : user
+        })
          
     }
     catch (err) {
         
         res.status(500).send(err.message);
     }
+})
+
+// Forgot password
+profileRouter.post("/profile/password", async(req,res) => {
+    try{
+
+        const {password,email,about,skills} = req.body
+        // will ask for email and find the user by that email
+        // then verify the about and skills and then reset the password
+        const user = await User.findOne({email:email})
+        if(!user){
+            throw new Error("Invalid")
+        }
+
+        // check about
+        if(user.about != about ){
+            throw new Error("Wrong credentials")
+        }
+        // check skills
+        const dbSkills = user.skills.map(s => s.toLowerCase()).sort();  // map() already creates a new array, so you don't need the spread operator.
+        const inputSkills = skills.map(s => s.toLowerCase()).sort();
+        // const dbSkills = [...user.skills].sort(); // spread operator [...] creates a new array.
+        // const inputSkills = [...skills].sort();
+
+        const sameSkills =
+            dbSkills.length === inputSkills.length &&
+            dbSkills.every((skill, i) => skill === inputSkills[i]);
+
+        if (!sameSkills) {
+            throw new Error("Wrong credentials");
+        }
+
+
+
+        if(!isStrongPassword(password)){
+            throw new Error("Enter a strong password")
+        }
+        const passwordHash = await bcrypt.hash(password,10)
+        user.password = passwordHash
+        console.log(password);
+        
+        await user.save();
+        res.send("Password Updated")
+    }
+    catch(err){
+        res.status(400).send(err.message)
+    }
+
 })
 
 // DELETE API using id
