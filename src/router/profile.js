@@ -83,7 +83,7 @@ profileRouter.post("/profile/password", async(req,res) => {
         }
 
         // check about
-        if(user.about != about ){
+        if(user.about !== about ){
             throw new Error("Wrong credentials")
         }
         // check skills
