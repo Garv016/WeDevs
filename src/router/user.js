@@ -29,7 +29,7 @@ userRouter.get("/user/requests/received" , userAuth, async (req,res) => {
         })
     }
     catch(err){
-        res.statusCode(404).send("Error in finding requests")
+        res.status(404).send("Error in finding requests")
     }
 })
 
@@ -69,19 +69,47 @@ userRouter.get("/user/connections",userAuth,async (req,res) => {
 // FEED API - GET all the users info
 userRouter.get("/user/feed" , userAuth, async (req,res) =>{
     try{
-        const userData= await User.find({}) 
-        if(userData.length === 0){
-            res.status(404).send("No user")
-        }
-        else {
-            res.send(userData)
-            console.log("ALL users fetched successfully");
-        }
+        // see those who arent a connection and dont see your ownself in feed
+        // and dont see of those already ignored
+        const loggedInUser = req.user
 
+        const page = parseInt(req.query.page) || 1
+        let limit = parseInt(req.query.limit) || 100
+        if(limit > 100) limit = 100
+        const skip = (page-1)*limit
+
+        const connectionRequest = await ConnectionRequest.find({
+            $or : [
+                {fromUserId : loggedInUser._id},
+                {toUserId : loggedInUser._id}
+            ]
+        })
+        .select("fromUserId toUserId")
+        // .populate("fromUserId" ,"firstName")
+        // .populate("toUserId","firstName")
+
+        const hideFromFeed = new Set()
+
+        connectionRequest.forEach((req) => {
+            hideFromFeed.add(req.fromUserId),
+            hideFromFeed.add(req.toUserId)
+        })
+
+        const feedShow = await User.find({
+            $and : [
+                {_id : {$nin : Array.from(hideFromFeed)}},
+                {_id : {$ne : loggedInUser._id}}
+            ]
+        })
+        .select("firstName lastName age about skills")
+        .skip(skip)
+        .limit(limit)
+        
+        res.send(feedShow)
     }
     catch (err) {
         console.log(err);
-        res.status(500).send("Something's OFF");
+        res.status(400).send("Something's OFF");
     }
 })
 
