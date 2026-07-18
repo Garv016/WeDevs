@@ -20,8 +20,8 @@ connectionRequestRouter
 Status : ( ignore, interested ) , (accepted,rejected)
 
 userInteractionRouter
+- get /user/requests/received
 - get /user/connections
-- get /user/requests
 - get /user/feed 
 
 
