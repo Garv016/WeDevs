@@ -10,9 +10,9 @@ const userAuth = async (req,res,next)=>{
         const {token} = cookies
 
         if(!token){
-            throw new Error("Invalid token")
+            return res.status(401).send("Unauthorised access not allowed.")
         }
-        // Verifying token
+        // Verifying token  
         // const decodedMsg = await jwt.verify(token,"LEARNING@JWT16")
         const decodedMsg = jwt.verify(token,"LEARNING@JWT16")
         

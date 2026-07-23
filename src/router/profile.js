@@ -8,13 +8,14 @@ const User = require("../model/user")
 const {validateEmailEdit}  = require("../utils/validation.js");
 const { isStrongPassword } = require("validator");
 const bcrypt = require("bcrypt")
+
 // Profile api -> get details of existing user using TOKEN
 profileRouter.get("/profile" , userAuth,async (req,res) =>{
 
     try{
-
         const user = req.user
-        res.send("User with name " + user.firstName + " found\n" + user);
+        if(!user) throw new Error("No user found")
+        res.send(user);
 
     }
     catch(err){
@@ -24,8 +25,7 @@ profileRouter.get("/profile" , userAuth,async (req,res) =>{
 }) 
 
 
-
-
+// NOT USED IN WeDevs app
 // GET /profile/view using mail
 profileRouter.get("/profile/view" , userAuth,async (req,res) =>{
     try{
