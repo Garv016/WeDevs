@@ -7,7 +7,6 @@ const isValid = require("../utils/validation");
 const bcrypt = require("bcrypt")
 const User = require("../model/user")
 
-
 // Taking input from postman
 authRouter.post("/signup" , async (req,res) => {
     try{
@@ -51,7 +50,7 @@ authRouter.post("/login" ,async (req,res) => {
             res.cookie("token",token); // sending cookie: It tells the browser:"Please store this cookie."
             console.log(token);
             
-            res.send("Successfully Logged in")
+            res.send(user)
             // console.log("User: ", user);
             
         } else{
